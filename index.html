@@ -1,0 +1,2088 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Resource Hub</title>
+    <meta name="description" content="Centralized academic workflow platform for high school and university students with study materials repository, Pomodoro focus timer, GPA calculator, and assignment task board." />
+    <meta property="og:title" content="Student Resource Hub" />
+    <meta property="og:description" content="Centralized academic workflow platform for high school and university students with study materials repository, Pomodoro focus timer, GPA calculator, and assignment task board." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+            },
+            colors: {
+              brand: {
+                50: '#eff6ff',
+                100: '#dbeafe',
+                200: '#bfdbfe',
+                300: '#93c5fd',
+                400: '#60a5fa',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                800: '#1e40af',
+                900: '#1e3a8a',
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      /* Base Smooth Theming & Reset */
+      :root {
+        --bg-body: #f8fafc;
+        --bg-card: #ffffff;
+        --border-subtle: #e2e8f0;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+      }
+      .dark {
+        --bg-body: #0b0f19;
+        --bg-card: #111827;
+        --border-subtle: #1f2937;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155;
+      }
+      /* Circular Timer SVG Transition */
+      .timer-ring-circle {
+        transition: stroke-dashoffset 0.85s linear, stroke 0.3s ease;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+      /* Drag & Drop Visuals */
+      .kanban-dropzone.drag-over {
+        background-color: rgba(59, 130, 246, 0.08);
+        border-color: #3b82f6;
+      }
+      .dragging-card {
+        opacity: 0.45;
+        transform: scale(0.98);
+      }
+      /* Toast Animation */
+      @keyframes toastSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px) scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      .animate-toast {
+        animation: toastSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+    <!-- Top Bar Contract -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
+        <!-- Zone 1: Single text element wordmark -->
+        <div class="flex items-center gap-3 shrink-0">
+          <button id="mobileMenuToggle" class="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" aria-label="Toggle Navigation">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <a href="#" class="flex items-center gap-2.5 font-bold text-lg tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
+            <span class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center shadow-sm">
+              <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+            </span>
+            <span>AcademiaHub</span>
+          </a>
+        </div>
+
+        <!-- Zone 2: Navigation Links -->
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+          <button onclick="navigateTo('repository')" id="nav-repository" class="nav-btn text-brand-600 dark:text-brand-400 font-semibold hover:text-brand-700 dark:hover:text-brand-300 transition-colors whitespace-nowrap shrink-0">
+            Resource Library
+          </button>
+          <button onclick="navigateTo('study-toolkit')" id="nav-study-toolkit" class="nav-btn hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+            Study Toolkit
+          </button>
+          <button onclick="navigateTo('task-planner')" id="nav-task-planner" class="nav-btn hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+            Task Planner
+          </button>
+          <button onclick="filterBookmarkedOnly()" id="nav-bookmarks" class="nav-btn hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5">
+            <span>Saved Items</span>
+            <span id="bookmarksCountBadge" class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono">0</span>
+          </button>
+        </nav>
+
+        <!-- Zone 3: 1 Primary Action + Quick Controls -->
+        <div class="flex items-center gap-3 shrink-0">
+          <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Toggle Theme" aria-label="Toggle Dark Mode">
+            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+
+          <button onclick="openUploadModal()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-[0.98] rounded-lg shadow-sm transition-all flex items-center gap-2 whitespace-nowrap shrink-0">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Upload Resource</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Mobile Drawer Navigation -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs hidden lg:hidden">
+      <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 p-6 flex flex-col justify-between shadow-2xl transition-transform">
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5 font-bold text-base text-slate-900 dark:text-white">
+              <span class="w-7 h-7 rounded-md bg-brand-600 text-white flex items-center justify-center">
+                <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+              </span>
+              <span>AcademiaHub</span>
+            </div>
+            <button id="closeMobileMenu" class="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-white rounded-md">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-2 pt-2">
+            <button onclick="navigateTo('repository'); closeDrawer();" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left">
+              <i data-lucide="book-open" class="w-4 h-4 text-slate-500"></i>
+              <span>Resource Library</span>
+            </button>
+            <button onclick="navigateTo('study-toolkit'); closeDrawer();" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left">
+              <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+              <span>Study Toolkit</span>
+            </button>
+            <button onclick="navigateTo('task-planner'); closeDrawer();" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left">
+              <i data-lucide="check-square" class="w-4 h-4 text-slate-500"></i>
+              <span>Task Planner</span>
+            </button>
+            <button onclick="filterBookmarkedOnly(); closeDrawer();" class="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left">
+              <div class="flex items-center gap-3">
+                <i data-lucide="bookmark" class="w-4 h-4 text-slate-500"></i>
+                <span>Saved Items</span>
+              </div>
+              <span id="mobileBookmarksBadge" class="text-xs bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">0</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-semibold text-xs text-slate-700 dark:text-slate-200">
+              AR
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-900 dark:text-white">Alex Rivera</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">CS &amp; Applied Math '26</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <!-- Quick Status Strip -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-xs text-slate-500 dark:text-slate-400">Total Materials</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="statTotalResources" class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">0</span>
+            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Verified docs</span>
+          </div>
+        </div>
+        <div class="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-xs text-slate-500 dark:text-slate-400">Saved Bookmarks</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="statBookmarks" class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">0</span>
+            <span class="text-xs text-brand-600 dark:text-brand-400 font-medium">Quick access</span>
+          </div>
+        </div>
+        <div class="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-xs text-slate-500 dark:text-slate-400">Active Tasks Due</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="statPendingTasks" class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">0</span>
+            <span id="statTaskCompletionPercent" class="text-xs text-slate-500 dark:text-slate-400 font-medium tabular-nums">0% done</span>
+          </div>
+        </div>
+        <div class="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-xs text-slate-500 dark:text-slate-400">Current Semester GPA</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="statGpaScore" class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">3.85</span>
+            <span id="statGpaStatus" class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Honors</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 1: RESOURCE REPOSITORY -->
+      <section id="section-repository" class="space-y-6">
+        <!-- Section Header with Search & Controls -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Academic Resource Repository</h1>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Curated lecture notes, verified past examination papers, code boilerplates, and comprehensive study guides.</p>
+          </div>
+
+          <!-- Instant Search Bar -->
+          <div class="relative w-full md:w-80 shrink-0">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input
+              type="text"
+              id="resourceSearchInput"
+              oninput="handleSearch(this.value)"
+              placeholder="Search titles, courses, tags..."
+              class="w-full pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors"
+            />
+            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Controls Deck -->
+        <div class="space-y-3">
+          <!-- Category Segmented Control Buttons -->
+          <div class="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl overflow-x-auto text-xs font-medium">
+            <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-pill active-cat px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs">
+              All Materials
+            </button>
+            <button onclick="setCategoryFilter('Lecture Notes')" data-cat="Lecture Notes" class="cat-pill px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Lecture Notes
+            </button>
+            <button onclick="setCategoryFilter('Past Exam Papers')" data-cat="Past Exam Papers" class="cat-pill px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Past Exam Papers
+            </button>
+            <button onclick="setCategoryFilter('Code Repositories')" data-cat="Code Repositories" class="cat-pill px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Code Repositories
+            </button>
+            <button onclick="setCategoryFilter('Project Templates')" data-cat="Project Templates" class="cat-pill px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Project Templates
+            </button>
+            <button onclick="setCategoryFilter('Study Guides')" data-cat="Study Guides" class="cat-pill px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Study Guides
+            </button>
+          </div>
+
+          <!-- Subject Area Tabs & Bookmarked Filter Toggle -->
+          <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex flex-wrap items-center gap-2" id="subjectFilterContainer">
+              <span class="text-slate-400 dark:text-slate-500 font-medium mr-1">Subject:</span>
+              <button onclick="setSubjectFilter('all')" data-subject="all" class="subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900">
+                All Subjects
+              </button>
+              <button onclick="setSubjectFilter('Computer Science')" data-subject="Computer Science" class="subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                Computer Science
+              </button>
+              <button onclick="setSubjectFilter('Mathematics')" data-subject="Mathematics" class="subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                Mathematics
+              </button>
+              <button onclick="setSubjectFilter('Physics')" data-subject="Physics" class="subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                Physics
+              </button>
+              <button onclick="setSubjectFilter('Literature')" data-subject="Literature" class="subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                Literature
+              </button>
+              <button onclick="setSubjectFilter('Data Science')" data-subject="Data Science" class="subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                Data Science
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="toggleBookmarkFilterBtn" onclick="toggleBookmarkedFilterOnly()" class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5 transition-colors">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                <span id="bookmarkFilterText">Show Bookmarked</span>
+              </button>
+              <span id="resultsCountNotice" class="text-slate-500 dark:text-slate-400 font-mono">Showing 0 items</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource Cards Grid -->
+        <div id="resourcesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+          <!-- Dynamically populated via JavaScript -->
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="noResultsState" class="hidden py-16 text-center">
+          <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
+            <i data-lucide="folder-search" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-base font-semibold text-slate-900 dark:text-white">No resources matched your filters</h3>
+          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Try modifying your search query or reset the category and subject filters.</p>
+          <button onclick="resetAllFilters()" class="mt-4 px-4 py-2 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline">
+            Reset all filters
+          </button>
+        </div>
+      </section>
+
+      <!-- SECTION 2: STUDY TOOLKIT (POMODORO & GPA CALCULATOR) -->
+      <section id="section-study-toolkit" class="space-y-8 hidden">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Study Productivity Toolkit</h1>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Maximize active recall focus blocks with the Pomodoro timer and plan your academic trajectory with the real-time GPA simulator.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- 2.1 Pomodoro Focus Timer Card (5 Cols) -->
+          <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col items-center">
+            <div class="w-full flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
+              <div>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white">Focus Interval Timer</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Evidence-based timed revision technique</p>
+              </div>
+              <span id="timerModeLabel" class="text-xs font-mono px-2 py-0.5 rounded bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-300 font-semibold uppercase">
+                Study Interval
+              </span>
+            </div>
+
+            <!-- Mode Selector Tabs -->
+            <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium mb-8">
+              <button onclick="setTimerMode('study')" id="timer-mode-study" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold">
+                25m Study
+              </button>
+              <button onclick="setTimerMode('shortBreak')" id="timer-mode-shortBreak" class="px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                5m Short Break
+              </button>
+              <button onclick="setTimerMode('longBreak')" id="timer-mode-longBreak" class="px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                15m Long Break
+              </button>
+            </div>
+
+            <!-- Circular Timer Visualizer -->
+            <div class="relative w-56 h-56 flex items-center justify-center my-2">
+              <svg class="w-full h-full" viewBox="0 0 200 200">
+                <!-- Track circle -->
+                <circle cx="100" cy="100" r="88" class="stroke-slate-100 dark:stroke-slate-800 fill-none" stroke-width="10"></circle>
+                <!-- Animated Progress Circle -->
+                <circle
+                  id="timerProgressRing"
+                  cx="100"
+                  cy="100"
+                  r="88"
+                  class="timer-ring-circle stroke-brand-600 dark:stroke-brand-500 fill-none"
+                  stroke-width="10"
+                  stroke-linecap="round"
+                  stroke-dasharray="552.92"
+                  stroke-dashoffset="0"
+                ></circle>
+              </svg>
+
+              <!-- Central Digital Countdown Display -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span id="timerDisplay" class="text-4xl font-mono font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">25:00</span>
+                <span id="timerSubtext" class="text-xs text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider font-medium">Ready</span>
+              </div>
+            </div>
+
+            <!-- Timer Action Buttons -->
+            <div class="flex items-center gap-3 mt-6">
+              <button
+                id="timerToggleBtn"
+                onclick="toggleTimer()"
+                class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-semibold text-sm rounded-xl shadow-xs transition-all flex items-center gap-2"
+              >
+                <i data-lucide="play" id="timerToggleIcon" class="w-4 h-4 fill-white"></i>
+                <span id="timerToggleText">Start Session</span>
+              </button>
+              <button
+                onclick="resetTimer()"
+                class="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                title="Reset Interval"
+                aria-label="Reset Interval"
+              >
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Session Stats & Sound Alert Indicator -->
+            <div class="w-full mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
+                <span>Completed Today: <strong id="completedSessionsCount" class="text-slate-900 dark:text-white font-mono">0</strong></span>
+              </div>
+              <div class="flex items-center gap-1">
+                <i data-lucide="bell" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span>Audio bell enabled</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2.2 GPA / Grade Calculator Card (7 Cols) -->
+          <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6 gap-3">
+              <div>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white">Academic GPA Calculator</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Standard 4.0 weighted credit grade point scale</p>
+              </div>
+
+              <!-- Computed GPA Banner -->
+              <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div class="text-right">
+                  <div class="text-xs text-slate-500 dark:text-slate-400">Cumulative GPA</div>
+                  <div class="text-xs text-slate-600 dark:text-slate-300"><span id="gpaTotalCredits" class="font-mono">16</span> credits taken</div>
+                </div>
+                <div id="gpaScoreDisplay" class="text-2xl font-mono font-bold text-brand-600 dark:text-brand-400 tabular-nums">3.85</div>
+              </div>
+            </div>
+
+            <!-- Courses Table / List -->
+            <div class="space-y-3" id="gpaCoursesList">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Calculator Toolbar -->
+            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <button
+                onclick="addGpaCourseRow()"
+                class="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Add Another Course</span>
+              </button>
+
+              <div class="flex items-center gap-2">
+                <button
+                  onclick="resetGpaToDefault()"
+                  class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                >
+                  Reset Defaults
+                </button>
+                <div id="gpaHonorNotice" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md">
+                  Dean's Honors Status (GPA ≥ 3.50)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: TASK & ASSIGNMENT PLANNER -->
+      <section id="section-task-planner" class="space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Assignment &amp; Task Planner</h1>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Track deadlines, problem sets, term papers, and milestones across your enrolled courses.</p>
+          </div>
+
+          <button onclick="openAddTaskModal()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-slate-900 dark:bg-brand-600 hover:bg-slate-800 dark:hover:bg-brand-700 active:scale-[0.98] rounded-lg shadow-sm transition-all flex items-center gap-2 whitespace-nowrap self-start sm:self-auto">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Create New Task</span>
+          </button>
+        </div>
+
+        <!-- Progress Tracking Card -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs">
+          <div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mb-2">
+            <div class="font-semibold flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-brand-600"></i>
+              <span>Semester Completion Velocity</span>
+            </div>
+            <span class="font-mono tabular-nums"><strong id="taskProgressPercentage" class="text-slate-900 dark:text-white font-bold">0%</strong> (<span id="taskProgressRatio">0 / 0</span> tasks completed)</span>
+          </div>
+          <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+            <div id="taskProgressBar" class="bg-brand-600 dark:bg-brand-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- 3-Column Interactive Kanban Board -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Column 1: To Do -->
+          <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">To Do</h3>
+              </div>
+              <span id="count-todo" class="text-xs font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">0</span>
+            </div>
+            <div id="col-todo" class="kanban-dropzone flex-1 space-y-3 min-h-[320px] transition-colors rounded-lg p-1" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Column 2: In Progress -->
+          <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">In Progress</h3>
+              </div>
+              <span id="count-in_progress" class="text-xs font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">0</span>
+            </div>
+            <div id="col-in_progress" class="kanban-dropzone flex-1 space-y-3 min-h-[320px] transition-colors rounded-lg p-1" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'in_progress')">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Column 3: Completed -->
+          <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Completed</h3>
+              </div>
+              <span id="count-completed" class="text-xs font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">0</span>
+            </div>
+            <div id="col-completed" class="kanban-dropzone flex-1 space-y-3 min-h-[320px] transition-colors rounded-lg p-1" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'completed')">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-xs text-slate-500 dark:text-slate-400">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <span>AcademiaHub</span>
+          <span>·</span>
+          <span>Open Academic Workspace for Students</span>
+        </div>
+        <div class="flex items-center gap-6">
+          <span>Local storage enabled</span>
+          <span>·</span>
+          <span>Zero external tracking</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- MODAL 1: RESOURCE QUICK PREVIEW -->
+    <div id="previewModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <!-- Preview Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span id="previewCategory" class="font-semibold text-brand-600 dark:text-brand-400">Lecture Notes</span>
+            <span>·</span>
+            <span id="previewCourse">CS 201</span>
+          </div>
+          <button onclick="closePreviewModal()" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-md">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Preview Modal Body (Scrollable) -->
+        <div class="p-6 overflow-y-auto space-y-4">
+          <h2 id="previewTitle" class="text-xl font-bold text-slate-900 dark:text-white">Binary Search Trees &amp; Red-Black Balance Theorems</h2>
+          
+          <div class="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-4 gap-y-1 py-1 border-y border-slate-100 dark:border-slate-800">
+            <span>Author: <strong id="previewAuthor" class="text-slate-700 dark:text-slate-300 font-medium">Prof. Henderson</strong></span>
+            <span>·</span>
+            <span>Format: <strong id="previewFormat" class="text-slate-700 dark:text-slate-300 font-medium">PDF (14 pages)</strong></span>
+            <span>·</span>
+            <span>Uploaded: <strong id="previewDate" class="text-slate-700 dark:text-slate-300 font-medium">Oct 2025</strong></span>
+          </div>
+
+          <div class="prose dark:prose-invert max-w-none text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-3">
+            <p id="previewDescription">A comprehensive walkthrough of balanced binary search trees, asymptotic runtimes for rotations, and proofs for node coloring constraints.</p>
+            
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-xs text-slate-800 dark:text-slate-200 space-y-2">
+              <div class="font-bold text-brand-600 dark:text-brand-400">Executive Study Highlights:</div>
+              <ul class="list-disc pl-4 space-y-1" id="previewHighlights">
+                <li>Lemma 1: Height of red-black tree with n nodes is at most 2 ln(n + 1).</li>
+                <li>Left and right rotational symmetry invariants maintained in O(1) time.</li>
+                <li>Comprehensive sample mid-term practice proof included in appendix.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Modal Footer Actions -->
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between">
+          <button id="previewBookmarkBtn" onclick="toggleBookmarkFromPreview()" class="px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5">
+            <i data-lucide="bookmark" class="w-4 h-4"></i>
+            <span id="previewBookmarkLabel">Bookmark</span>
+          </button>
+          
+          <button id="previewDownloadBtn" onclick="triggerDownloadFromPreview()" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-lg shadow-sm transition-all flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Download Document</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: RESOURCE UPLOAD SIMULATOR -->
+    <div id="uploadModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-brand-600"></i>
+            <span>Upload Academic Material</span>
+          </div>
+          <button onclick="closeUploadModal()" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-md">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="uploadResourceForm" onsubmit="handleResourceSubmit(event)" class="p-6 overflow-y-auto space-y-4">
+          <!-- Drag & Drop Zone -->
+          <div
+            id="dropZoneContainer"
+            ondragover="handleUploadDragOver(event)"
+            ondragleave="handleUploadDragLeave(event)"
+            ondrop="handleUploadDrop(event)"
+            onclick="document.getElementById('hiddenFileInput').click()"
+            class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-500 rounded-xl p-6 text-center cursor-pointer bg-slate-50 dark:bg-slate-800/40 transition-colors"
+          >
+            <input type="file" id="hiddenFileInput" class="hidden" onchange="handleFileChosen(event)" />
+            <i data-lucide="file-up" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+            <div id="uploadZoneText" class="text-xs text-slate-600 dark:text-slate-300">
+              <span class="font-semibold text-brand-600 dark:text-brand-400">Click to upload</span> or drag and drop file here
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">PDF, DOCX, MD, ZIP up to 50MB</div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputResourceTitle">Resource Title *</label>
+            <input required type="text" id="inputResourceTitle" placeholder="e.g. Modern Physics Chapter 4 Wave Mechanics" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputResourceCategory">Category *</label>
+              <select id="inputResourceCategory" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="Lecture Notes">Lecture Notes</option>
+                <option value="Past Exam Papers">Past Exam Papers</option>
+                <option value="Code Repositories">Code Repositories</option>
+                <option value="Project Templates">Project Templates</option>
+                <option value="Study Guides">Study Guides</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputResourceSubject">Subject Area *</label>
+              <select id="inputResourceSubject" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Physics">Physics</option>
+                <option value="Literature">Literature</option>
+                <option value="Data Science">Data Science</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputResourceCourse">Course Code *</label>
+              <input required type="text" id="inputResourceCourse" placeholder="e.g. PHYS 102" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputResourceTags">Comma Tags</label>
+              <input type="text" id="inputResourceTags" placeholder="e.g. quantum, midterm, lab" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputResourceDesc">Description &amp; Key Topics</label>
+            <textarea rows="3" id="inputResourceDesc" placeholder="Brief synopsis of what this resource covers..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+          </div>
+
+          <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <button type="button" onclick="closeUploadModal()" class="px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-all">
+              Save &amp; Publish Resource
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 3: ADD TASK MODAL -->
+    <div id="addTaskModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div class="font-bold text-slate-900 dark:text-white">Add Assignment or Task</div>
+          <button onclick="closeAddTaskModal()" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-md">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="addTaskForm" onsubmit="handleTaskSubmit(event)" class="p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputTaskTitle">Task Title *</label>
+            <input required type="text" id="inputTaskTitle" placeholder="e.g. Problem Set 4: Vector Calculus" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputTaskCourse">Course *</label>
+              <input required type="text" id="inputTaskCourse" placeholder="e.g. MATH 305" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputTaskDueDate">Due Date *</label>
+              <input required type="date" id="inputTaskDueDate" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputTaskPriority">Priority</label>
+              <select id="inputTaskPriority" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="High">High Priority</option>
+                <option value="Medium" selected>Medium Priority</option>
+                <option value="Low">Low Priority</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" for="inputTaskState">Starting Column</label>
+              <select id="inputTaskState" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="todo" selected>To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <button type="button" onclick="closeAddTaskModal()" class="px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-slate-900 dark:bg-brand-600 hover:bg-slate-800 dark:hover:bg-brand-700 rounded-lg shadow-sm transition-all">
+              Add Task
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+      /* ==========================================================================
+         1. STATE INITIALIZATION & LOCAL STORAGE PERSISTENCE
+         ========================================================================== */
+      const STORAGE_KEYS = {
+        THEME: 'acad_theme',
+        BOOKMARKS: 'acad_bookmarks',
+        RESOURCES: 'acad_resources',
+        TASKS: 'acad_tasks',
+        GPA_COURSES: 'acad_gpa_courses',
+        POMODORO: 'acad_pomo_stats',
+      };
+
+      // Mock Academic Resources
+      const DEFAULT_RESOURCES = [
+        {
+          id: 'res-1',
+          title: 'Algorithms & Data Structures: Tree Rotations & Invariants',
+          subject: 'Computer Science',
+          category: 'Lecture Notes',
+          course: 'CS 201',
+          author: 'Prof. Henderson',
+          date: 'Fall 2025',
+          format: 'PDF · 18 pages',
+          tags: ['trees', 'red-black', 'complexity'],
+          description: 'Rigorous analysis of self-balancing binary search trees, worst-case height bounds, and asymptotic proofs for node rotation algorithms.',
+          sampleFile: 'CS201_Balanced_Trees_Notes.md',
+          highlights: [
+            'Red-Black Tree balance lemma: maximum height 2*lg(n+1)',
+            'Step-by-step single and double AVL tree rotations',
+            'Full sample exam questions with worked solutions',
+          ],
+        },
+        {
+          id: 'res-2',
+          title: 'Final Examination Paper with Model Marking Scheme (2024)',
+          subject: 'Mathematics',
+          category: 'Past Exam Papers',
+          course: 'MATH 305',
+          author: 'Dept. of Mathematics',
+          date: 'Spring 2024',
+          format: 'PDF · 12 pages',
+          tags: ['calculus', 'greens-theorem', 'exam'],
+          description: 'Complete 3-hour final exam covering Green’s, Stokes’, and Divergence theorems with point-by-point marking rubric.',
+          sampleFile: 'MATH305_Final_Exam_2024.txt',
+          highlights: [
+            'Problem 1-4: Line integrals on closed manifolds',
+            'Problem 5: Surface flux integrals and Stokes theorem application',
+            'Detailed teacher marking breakdown with partial credit guidelines',
+          ],
+        },
+        {
+          id: 'res-3',
+          title: 'Full-Stack Distributed Systems Sandbox with gRPC & Raft',
+          subject: 'Computer Science',
+          category: 'Code Repositories',
+          course: 'CS 341',
+          author: 'T.A. Marcus Chen',
+          date: 'Fall 2025',
+          format: 'ZIP · 4.2 MB',
+          tags: ['raft', 'distributed', 'concurrency'],
+          description: 'Production-ready reference implementation of leader election and log replication consensus protocols in TypeScript & Go.',
+          sampleFile: 'raft_consensus_starter.zip',
+          highlights: [
+            'Clean heartbeat RPC timing tests with network partition simulators',
+            'Leader election term monotonicity proofs and state transitions',
+            'Ready to run via single docker-compose command',
+          ],
+        },
+        {
+          id: 'res-4',
+          title: 'Classical Electrodynamics: Maxwell’s Equations & Waveguide Equations',
+          subject: 'Physics',
+          category: 'Lecture Notes',
+          course: 'PHYS 210',
+          author: 'Dr. Elizabeth Vogel',
+          date: 'Winter 2025',
+          format: 'PDF · 24 pages',
+          tags: ['maxwell', 'fields', 'optics'],
+          description: 'Comprehensive derivation of electromagnetic wave propagation in rectangular conductors with boundary condition limits.',
+          sampleFile: 'PHYS210_Electrodynamics_Notes.pdf',
+          highlights: [
+            'TE and TM mode frequency cutoff calculations',
+            'Poynting vector energy conservation derivations',
+            'Formula cheatsheet attached for final review',
+          ],
+        },
+        {
+          id: 'res-5',
+          title: 'Senior Thesis Research Paper LaTeX & Typst Starter Kit',
+          subject: 'Literature',
+          category: 'Project Templates',
+          course: 'HUM 401',
+          author: 'Academic Writing Center',
+          date: 'Fall 2025',
+          format: 'ZIP · 1.1 MB',
+          tags: ['thesis', 'latex', 'chicago-style'],
+          description: 'Pre-formatted scholarly template with bibtex citation management, chapter structure, and university thesis typography guidelines.',
+          sampleFile: 'Senior_Thesis_Template.zip',
+          highlights: [
+            'Configured for APA 7th, Chicago 17th, and MLA 9th editions',
+            'Built-in frontmatter, abstract, dedication, and appendix modules',
+            'Compiles cleanly with XeLaTeX and LuaLaTeX engines',
+          ],
+        },
+        {
+          id: 'res-6',
+          title: 'Statistical Learning & Gradient Descent Convergence Guide',
+          subject: 'Data Science',
+          category: 'Study Guides',
+          course: 'DS 220',
+          author: 'Prof. Anika Sharma',
+          date: 'Winter 2025',
+          format: 'PDF · 16 pages',
+          tags: ['optimization', 'regression', 'loss-functions'],
+          description: 'Illustrated guide comparing Batch GD, Stochastic GD, Adam, and RMSprop with learning rate scheduling formulas.',
+          sampleFile: 'DS220_Optimization_Guide.pdf',
+          highlights: [
+            'Convexity conditions and Lipschitz smoothness criteria',
+            'Momentum decay constants and hyperparameter tuning tables',
+            'Interactive Python visualizer snippets included',
+          ],
+        },
+        {
+          id: 'res-7',
+          title: 'Modernist American Fiction: Close Reading Critical Analysis',
+          subject: 'Literature',
+          category: 'Study Guides',
+          course: 'ENGL 240',
+          author: 'Prof. David Vance',
+          date: 'Fall 2025',
+          format: 'PDF · 14 pages',
+          tags: ['faulkner', 'fitzgerald', 'narrative'],
+          description: 'Deep-dive textual commentary on non-linear narrative architecture, stream of consciousness, and historical post-war alienation.',
+          sampleFile: 'ENGL240_Modernism_Critical_Guide.pdf',
+          highlights: [
+            'Chronological matrix of Faulkner’s temporal displacement techniques',
+            'Primary source excerpts with paragraph annotations',
+            'Sample mid-term essay rubric and grading breakdown',
+          ],
+        },
+        {
+          id: 'res-8',
+          title: 'Differential Equations Midterm II Archive with Solutions (2023)',
+          subject: 'Mathematics',
+          category: 'Past Exam Papers',
+          course: 'MATH 221',
+          author: 'Dept. of Mathematics',
+          date: 'Fall 2023',
+          format: 'PDF · 8 pages',
+          tags: ['laplace', 'odes', 'series'],
+          description: 'Archive examination containing second-order non-homogeneous equations, Laplace transforms, and convolution theorem proofs.',
+          sampleFile: 'MATH221_Exam_Archive_2023.txt',
+          highlights: [
+            'Method of Undetermined Coefficients vs Variation of Parameters',
+            'Step response of RLC circuits modeled via Laplace transforms',
+            'Complete step-by-step scoring rubric',
+          ],
+        },
+      ];
+
+      // Mock Academic Tasks
+      const DEFAULT_TASKS = [
+        {
+          id: 'task-1',
+          title: 'Submit CS 201 Red-Black Tree Coding Assignment',
+          course: 'CS 201',
+          dueDate: '2026-11-12',
+          priority: 'High',
+          status: 'in_progress',
+        },
+        {
+          id: 'task-2',
+          title: 'Read Chapters 8-10 in Classical Electrodynamics',
+          course: 'PHYS 210',
+          dueDate: '2026-11-15',
+          priority: 'Medium',
+          status: 'todo',
+        },
+        {
+          id: 'task-3',
+          title: 'Submit Senior Thesis Annotated Bibliography Draft',
+          course: 'HUM 401',
+          dueDate: '2026-11-18',
+          priority: 'High',
+          status: 'todo',
+        },
+        {
+          id: 'task-4',
+          title: 'Complete Vector Calculus Problem Set 5',
+          course: 'MATH 305',
+          dueDate: '2026-11-09',
+          priority: 'High',
+          status: 'completed',
+        },
+        {
+          id: 'task-5',
+          title: 'Implement Adam Optimizer in PyTorch from scratch',
+          course: 'DS 220',
+          dueDate: '2026-11-20',
+          priority: 'Low',
+          status: 'todo',
+        },
+        {
+          id: 'task-6',
+          title: 'Form Study Group for Differential Equations Midterm',
+          course: 'MATH 221',
+          dueDate: '2026-11-14',
+          priority: 'Medium',
+          status: 'in_progress',
+        },
+        {
+          id: 'task-7',
+          title: 'Library archival review for ENGL 240 paper',
+          course: 'ENGL 240',
+          dueDate: '2026-11-05',
+          priority: 'Low',
+          status: 'completed',
+        },
+      ];
+
+      // Default GPA Courses
+      const DEFAULT_GPA_COURSES = [
+        { id: 'gpa-1', name: 'Algorithms & Data Structures (CS 201)', credits: 4, grade: 'A' },
+        { id: 'gpa-2', name: 'Advanced Vector Calculus (MATH 305)', credits: 4, grade: 'A-' },
+        { id: 'gpa-3', name: 'Classical Electrodynamics (PHYS 210)', credits: 4, grade: 'B+' },
+        { id: 'gpa-4', name: 'Statistical Learning Theory (DS 220)', credits: 4, grade: 'A' },
+      ];
+
+      // Grade point mappings (Standard 4.0 Scale)
+      const GRADE_POINTS = {
+        'A': 4.0,
+        'A-': 3.7,
+        'B+': 3.3,
+        'B': 3.0,
+        'B-': 2.7,
+        'C+': 2.3,
+        'C': 2.0,
+        'D': 1.0,
+        'F': 0.0,
+      };
+
+      // In-Memory Reactive State
+      let appState = {
+        resources: [],
+        bookmarks: new Set(),
+        tasks: [],
+        gpaCourses: [],
+        activeCategory: 'all',
+        activeSubject: 'all',
+        searchQuery: '',
+        bookmarkedOnlyFilter: false,
+        activePreviewId: null,
+      };
+
+      /* ==========================================================================
+         2. APP BOOTSTRAP & STORAGE SYNC
+         ========================================================================== */
+      function initApp() {
+        // Theme initialization
+        const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+
+        // Bookmarks
+        const storedBookmarks = localStorage.getItem(STORAGE_KEYS.BOOKMARKS);
+        appState.bookmarks = new Set(storedBookmarks ? JSON.parse(storedBookmarks) : ['res-1', 'res-3']);
+
+        // Resources
+        const storedResources = localStorage.getItem(STORAGE_KEYS.RESOURCES);
+        appState.resources = storedResources ? JSON.parse(storedResources) : DEFAULT_RESOURCES;
+
+        // Tasks
+        const storedTasks = localStorage.getItem(STORAGE_KEYS.TASKS);
+        appState.tasks = storedTasks ? JSON.parse(storedTasks) : DEFAULT_TASKS;
+
+        // GPA Courses
+        const storedGpa = localStorage.getItem(STORAGE_KEYS.GPA_COURSES);
+        appState.gpaCourses = storedGpa ? JSON.parse(storedGpa) : DEFAULT_GPA_COURSES;
+
+        // Pomodoro stats
+        const storedPomo = localStorage.getItem(STORAGE_KEYS.POMODORO);
+        if (storedPomo) {
+          const p = JSON.parse(storedPomo);
+          pomoState.completedToday = p.completedToday || 0;
+          document.getElementById('completedSessionsCount').textContent = pomoState.completedToday;
+        }
+
+        // Render UI
+        renderResources();
+        renderTasks();
+        renderGpaCalculator();
+        updateQuickStats();
+
+        // Initialize Lucide icons
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+        // Mobile drawer event handlers
+        document.getElementById('mobileMenuToggle').addEventListener('click', openDrawer);
+        document.getElementById('closeMobileMenu').addEventListener('click', closeDrawer);
+      }
+
+      function updateQuickStats() {
+        document.getElementById('statTotalResources').textContent = appState.resources.length;
+        document.getElementById('statBookmarks').textContent = appState.bookmarks.size;
+        document.getElementById('bookmarksCountBadge').textContent = appState.bookmarks.size;
+        document.getElementById('mobileBookmarksBadge').textContent = appState.bookmarks.size;
+
+        const pending = appState.tasks.filter((t) => t.status !== 'completed').length;
+        const total = appState.tasks.length;
+        const completed = total - pending;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        document.getElementById('statPendingTasks').textContent = pending;
+        document.getElementById('statTaskCompletionPercent').textContent = `${percent}% done`;
+      }
+
+      function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem(STORAGE_KEYS.THEME, isDark ? 'dark' : 'light');
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function openDrawer() {
+        document.getElementById('mobileDrawer').classList.remove('hidden');
+      }
+      function closeDrawer() {
+        document.getElementById('mobileDrawer').classList.add('hidden');
+      }
+
+      /* Navigation Router */
+      function navigateTo(sectionId) {
+        // Sections
+        ['repository', 'study-toolkit', 'task-planner'].forEach((s) => {
+          const el = document.getElementById(`section-${s}`);
+          const btn = document.getElementById(`nav-${s}`);
+          if (s === sectionId) {
+            el.classList.remove('hidden');
+            if (btn) {
+              btn.classList.add('text-brand-600', 'dark:text-brand-400', 'font-semibold');
+              btn.classList.remove('text-slate-600', 'dark:text-slate-300');
+            }
+          } else {
+            el.classList.add('hidden');
+            if (btn) {
+              btn.classList.remove('text-brand-600', 'dark:text-brand-400', 'font-semibold');
+              btn.classList.add('text-slate-600', 'dark:text-slate-300');
+            }
+          }
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.lucide) lucide.createIcons();
+      }
+
+      /* ==========================================================================
+         3. RESOURCE REPOSITORY LOGIC (SEARCH, FILTERS, CARDS, BOOKMARKS)
+         ========================================================================== */
+      function handleSearch(val) {
+        appState.searchQuery = val.trim().toLowerCase();
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (appState.searchQuery.length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+        renderResources();
+      }
+
+      function clearSearch() {
+        const input = document.getElementById('resourceSearchInput');
+        input.value = '';
+        appState.searchQuery = '';
+        document.getElementById('clearSearchBtn').classList.add('hidden');
+        renderResources();
+      }
+
+      function setCategoryFilter(category) {
+        appState.activeCategory = category;
+        document.querySelectorAll('.cat-pill').forEach((btn) => {
+          if (btn.getAttribute('data-cat') === category) {
+            btn.className = 'cat-pill active-cat px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold';
+          } else {
+            btn.className = 'cat-pill px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+          }
+        });
+        renderResources();
+      }
+
+      function setSubjectFilter(subject) {
+        appState.activeSubject = subject;
+        document.querySelectorAll('.subject-pill').forEach((btn) => {
+          if (btn.getAttribute('data-subject') === subject) {
+            btn.className = 'subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900';
+          } else {
+            btn.className = 'subject-pill px-2.5 py-1 rounded-md font-medium transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700';
+          }
+        });
+        renderResources();
+      }
+
+      function toggleBookmarkedFilterOnly() {
+        appState.bookmarkedOnlyFilter = !appState.bookmarkedOnlyFilter;
+        const btn = document.getElementById('toggleBookmarkFilterBtn');
+        const text = document.getElementById('bookmarkFilterText');
+        if (appState.bookmarkedOnlyFilter) {
+          btn.classList.add('bg-brand-50', 'dark:bg-brand-950/50', 'border-brand-300', 'text-brand-700', 'dark:text-brand-300');
+          text.textContent = 'Showing Bookmarks Only';
+        } else {
+          btn.classList.remove('bg-brand-50', 'dark:bg-brand-950/50', 'border-brand-300', 'text-brand-700', 'dark:text-brand-300');
+          text.textContent = 'Show Bookmarked';
+        }
+        renderResources();
+      }
+
+      function filterBookmarkedOnly() {
+        navigateTo('repository');
+        if (!appState.bookmarkedOnlyFilter) {
+          toggleBookmarkedFilterOnly();
+        }
+      }
+
+      function resetAllFilters() {
+        appState.searchQuery = '';
+        document.getElementById('resourceSearchInput').value = '';
+        document.getElementById('clearSearchBtn').classList.add('hidden');
+        setCategoryFilter('all');
+        setSubjectFilter('all');
+        if (appState.bookmarkedOnlyFilter) {
+          toggleBookmarkedFilterOnly();
+        }
+      }
+
+      function renderResources() {
+        const grid = document.getElementById('resourcesGrid');
+        const emptyState = document.getElementById('noResultsState');
+        const countNotice = document.getElementById('resultsCountNotice');
+
+        let filtered = appState.resources.filter((res) => {
+          // Category filter
+          if (appState.activeCategory !== 'all' && res.category !== appState.activeCategory) {
+            return false;
+          }
+          // Subject filter
+          if (appState.activeSubject !== 'all' && res.subject !== appState.activeSubject) {
+            return false;
+          }
+          // Bookmark filter
+          if (appState.bookmarkedOnlyFilter && !appState.bookmarks.has(res.id)) {
+            return false;
+          }
+          // Search query
+          if (appState.searchQuery) {
+            const q = appState.searchQuery;
+            const inTitle = res.title.toLowerCase().includes(q);
+            const inCourse = res.course.toLowerCase().includes(q);
+            const inDesc = res.description.toLowerCase().includes(q);
+            const inTags = res.tags && res.tags.some((t) => t.toLowerCase().includes(q));
+            if (!inTitle && !inCourse && !inDesc && !inTags) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        countNotice.textContent = `Showing ${filtered.length} of ${appState.resources.length} items`;
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '';
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        grid.innerHTML = filtered
+          .map((res) => {
+            const isBookmarked = appState.bookmarks.has(res.id);
+            const categoryIconMap = {
+              'Lecture Notes': 'file-text',
+              'Past Exam Papers': 'file-check',
+              'Code Repositories': 'code-2',
+              'Project Templates': 'layout-template',
+              'Study Guides': 'compass',
+            };
+            const iconName = categoryIconMap[res.category] || 'book-open';
+
+            return `
+              <article class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between group">
+                <div>
+                  <!-- Unboxed Top Metadata -->
+                  <div class="flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 mb-2.5">
+                    <div class="flex items-center gap-1.5 font-medium">
+                      <i data-lucide="${iconName}" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i>
+                      <span>${escapeHtml(res.category)}</span>
+                      <span aria-hidden="true">·</span>
+                      <span class="text-slate-700 dark:text-slate-300 font-semibold">${escapeHtml(res.course)}</span>
+                    </div>
+
+                    <!-- Bookmark Button -->
+                    <button
+                      onclick="toggleBookmark('${res.id}')"
+                      class="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors ${
+                        isBookmarked ? 'text-amber-500 fill-amber-500 dark:text-amber-400' : ''
+                      }"
+                      title="${isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}"
+                      aria-label="Bookmark ${escapeHtml(res.title)}"
+                    >
+                      <i data-lucide="bookmark" class="w-4 h-4 ${isBookmarked ? 'fill-current' : ''}"></i>
+                    </button>
+                  </div>
+
+                  <!-- Card Title -->
+                  <h3 class="text-base font-bold text-slate-900 dark:text-white leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                    <a href="javascript:void(0)" onclick="openPreviewModal('${res.id}')">${escapeHtml(res.title)}</a>
+                  </h3>
+
+                  <!-- Quiet Unboxed Details -->
+                  <div class="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 mt-1 mb-2.5">
+                    <span>${escapeHtml(res.subject)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHtml(res.format || 'Document')}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHtml(res.date || 'Current')}</span>
+                  </div>
+
+                  <!-- Description -->
+                  <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                    ${escapeHtml(res.description)}
+                  </p>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 truncate">
+                    ${(res.tags || []).slice(0, 3).map((t) => `#${escapeHtml(t)}`).join(' ')}
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      onclick="openPreviewModal('${res.id}')"
+                      class="px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                      <span>Preview</span>
+                    </button>
+                    <button
+                      onclick="simulateDownload('${res.id}')"
+                      class="px-2.5 py-1.5 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/40 hover:bg-brand-100 dark:hover:bg-brand-900/60 rounded-lg transition-colors flex items-center gap-1"
+                      title="Download file"
+                    >
+                      <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                      <span>Download</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join('');
+
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function toggleBookmark(resId) {
+        if (appState.bookmarks.has(resId)) {
+          appState.bookmarks.delete(resId);
+          showToast('Removed from saved bookmarks');
+        } else {
+          appState.bookmarks.add(resId);
+          showToast('Resource saved to bookmarks');
+        }
+        localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(Array.from(appState.bookmarks)));
+        updateQuickStats();
+        renderResources();
+      }
+
+      /* Quick Preview Modal */
+      function openPreviewModal(resId) {
+        const res = appState.resources.find((r) => r.id === resId);
+        if (!res) return;
+        appState.activePreviewId = resId;
+
+        document.getElementById('previewTitle').textContent = res.title;
+        document.getElementById('previewCategory').textContent = res.category;
+        document.getElementById('previewCourse').textContent = res.course;
+        document.getElementById('previewAuthor').textContent = res.author || 'Academic Faculty';
+        document.getElementById('previewFormat').textContent = res.format || 'PDF Document';
+        document.getElementById('previewDate').textContent = res.date || '2025';
+        document.getElementById('previewDescription').textContent = res.description;
+
+        const highlightsContainer = document.getElementById('previewHighlights');
+        highlightsContainer.innerHTML = (res.highlights || [
+          'Comprehensive course material verified by department staff.',
+          'Formulas and key theorems detailed with worked examples.',
+          'Ready for offline study and self-assessment.',
+        ])
+          .map((h) => `<li>${escapeHtml(h)}</li>`)
+          .join('');
+
+        const isBookmarked = appState.bookmarks.has(resId);
+        document.getElementById('previewBookmarkLabel').textContent = isBookmarked ? 'Bookmarked' : 'Bookmark';
+
+        document.getElementById('previewModal').classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function closePreviewModal() {
+        document.getElementById('previewModal').classList.add('hidden');
+        appState.activePreviewId = null;
+      }
+
+      function toggleBookmarkFromPreview() {
+        if (!appState.activePreviewId) return;
+        toggleBookmark(appState.activePreviewId);
+        const isBookmarked = appState.bookmarks.has(appState.activePreviewId);
+        document.getElementById('previewBookmarkLabel').textContent = isBookmarked ? 'Bookmarked' : 'Bookmark';
+      }
+
+      function triggerDownloadFromPreview() {
+        if (!appState.activePreviewId) return;
+        simulateDownload(appState.activePreviewId);
+      }
+
+      /* Simulated File Download Generator */
+      function simulateDownload(resId) {
+        const res = appState.resources.find((r) => r.id === resId);
+        if (!res) return;
+
+        const filename = res.sampleFile || `${res.course}_${res.title.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.md`;
+        const content = `# ACADEMIAHUB ACADEMIC REPOSITORY
+Document: ${res.title}
+Course: ${res.course} (${res.subject})
+Category: ${res.category}
+Author: ${res.author} | Term: ${res.date}
+
+========================================================================
+EXECUTIVE SYNOPSIS
+========================================================================
+${res.description}
+
+========================================================================
+KEY THEOREMS & LECTURE SUMMARY
+========================================================================
+${(res.highlights || []).map((h, i) => `${i + 1}. ${h}`).join('\n')}
+
+Generated and verified for offline student revision.
+Downloaded from AcademiaHub on ${new Date().toLocaleDateString()}.
+`;
+
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast(`Downloaded ${filename}`);
+      }
+
+      /* Upload Simulator Modal */
+      function openUploadModal() {
+        document.getElementById('uploadModal').classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+      function closeUploadModal() {
+        document.getElementById('uploadModal').classList.add('hidden');
+        document.getElementById('uploadResourceForm').reset();
+        document.getElementById('uploadZoneText').innerHTML = '<span class="font-semibold text-brand-600 dark:text-brand-400">Click to upload</span> or drag and drop file here';
+      }
+
+      function handleUploadDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('border-brand-500', 'bg-brand-50/50', 'dark:bg-brand-950/20');
+      }
+      function handleUploadDragLeave(e) {
+        e.currentTarget.classList.remove('border-brand-500', 'bg-brand-50/50', 'dark:bg-brand-950/20');
+      }
+      function handleUploadDrop(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('border-brand-500', 'bg-brand-50/50', 'dark:bg-brand-950/20');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          const file = e.dataTransfer.files[0];
+          document.getElementById('uploadZoneText').innerHTML = `Selected: <strong>${escapeHtml(file.name)}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+        }
+      }
+      function handleFileChosen(e) {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          document.getElementById('uploadZoneText').innerHTML = `Selected: <strong>${escapeHtml(file.name)}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+        }
+      }
+
+      function handleResourceSubmit(e) {
+        e.preventDefault();
+        const title = document.getElementById('inputResourceTitle').value.trim();
+        const category = document.getElementById('inputResourceCategory').value;
+        const subject = document.getElementById('inputResourceSubject').value;
+        const course = document.getElementById('inputResourceCourse').value.trim().toUpperCase();
+        const tagsRaw = document.getElementById('inputResourceTags').value;
+        const desc = document.getElementById('inputResourceDesc').value.trim() || 'Verified course document contributed by student community.';
+
+        const tags = tagsRaw
+          ? tagsRaw.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean)
+          : [course.toLowerCase(), 'student-upload'];
+
+        const newResource = {
+          id: 'res-' + Date.now(),
+          title,
+          category,
+          subject,
+          course,
+          author: 'Alex Rivera (You)',
+          date: 'Just now',
+          format: 'PDF · Uploaded',
+          tags,
+          description: desc,
+          sampleFile: `${course}_${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+          highlights: [
+            'Student community verified resource.',
+            'Contains lecture notes and formula summaries.',
+            'Ready for group study sessions.',
+          ],
+        };
+
+        appState.resources.unshift(newResource);
+        localStorage.setItem(STORAGE_KEYS.RESOURCES, JSON.stringify(appState.resources));
+        updateQuickStats();
+        renderResources();
+        closeUploadModal();
+        showToast('Resource uploaded and published to library!');
+      }
+
+      /* ==========================================================================
+         4. STUDY TOOLKIT: POMODORO FOCUS TIMER (WITH WEB AUDIO CHIME)
+         ========================================================================== */
+      const POMO_MODES = {
+        study: { label: 'Study Interval', duration: 25 * 60 },
+        shortBreak: { label: 'Short Break', duration: 5 * 60 },
+        longBreak: { label: 'Long Break', duration: 15 * 60 },
+      };
+
+      let pomoState = {
+        mode: 'study',
+        timeLeft: 25 * 60,
+        totalDuration: 25 * 60,
+        isRunning: false,
+        timerInterval: null,
+        completedToday: 0,
+      };
+
+      const RING_CIRCUMFERENCE = 2 * Math.PI * 88; // ~552.92
+
+      function setTimerMode(modeKey) {
+        pomoState.isRunning = false;
+        clearInterval(pomoState.timerInterval);
+        pomoState.mode = modeKey;
+        pomoState.timeLeft = POMO_MODES[modeKey].duration;
+        pomoState.totalDuration = POMO_MODES[modeKey].duration;
+
+        // UI Tabs
+        ['study', 'shortBreak', 'longBreak'].forEach((m) => {
+          const btn = document.getElementById(`timer-mode-${m}`);
+          if (m === modeKey) {
+            btn.className = 'px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+          }
+        });
+
+        document.getElementById('timerModeLabel').textContent = POMO_MODES[modeKey].label;
+        updateTimerDisplay();
+        updateTimerControls();
+      }
+
+      function updateTimerDisplay() {
+        const m = Math.floor(pomoState.timeLeft / 60);
+        const s = pomoState.timeLeft % 60;
+        const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        document.getElementById('timerDisplay').textContent = formatted;
+
+        // Ring progress: dashoffset ranges from 0 to RING_CIRCUMFERENCE
+        const fraction = (pomoState.totalDuration - pomoState.timeLeft) / pomoState.totalDuration;
+        const offset = RING_CIRCUMFERENCE * fraction;
+        document.getElementById('timerProgressRing').style.strokeDashoffset = offset;
+
+        document.getElementById('timerSubtext').textContent = pomoState.isRunning ? 'In Progress' : 'Paused';
+      }
+
+      function updateTimerControls() {
+        const btn = document.getElementById('timerToggleBtn');
+        const text = document.getElementById('timerToggleText');
+        const icon = document.getElementById('timerToggleIcon');
+
+        if (pomoState.isRunning) {
+          text.textContent = 'Pause';
+          icon.setAttribute('data-lucide', 'pause');
+          btn.classList.remove('bg-brand-600', 'hover:bg-brand-700');
+          btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
+        } else {
+          text.textContent = pomoState.timeLeft < pomoState.totalDuration ? 'Resume' : 'Start Session';
+          icon.setAttribute('data-lucide', 'play');
+          btn.classList.add('bg-brand-600', 'hover:bg-brand-700');
+          btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+        }
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function toggleTimer() {
+        if (pomoState.isRunning) {
+          pauseTimer();
+        } else {
+          startTimer();
+        }
+      }
+
+      function startTimer() {
+        pomoState.isRunning = true;
+        updateTimerControls();
+        pomoState.timerInterval = setInterval(() => {
+          if (pomoState.timeLeft > 0) {
+            pomoState.timeLeft--;
+            updateTimerDisplay();
+          } else {
+            handleTimerComplete();
+          }
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        pomoState.isRunning = false;
+        clearInterval(pomoState.timerInterval);
+        updateTimerControls();
+        updateTimerDisplay();
+      }
+
+      function resetTimer() {
+        pauseTimer();
+        pomoState.timeLeft = pomoState.totalDuration;
+        updateTimerDisplay();
+        updateTimerControls();
+      }
+
+      function handleTimerComplete() {
+        pauseTimer();
+        playBellChime();
+
+        if (pomoState.mode === 'study') {
+          pomoState.completedToday++;
+          document.getElementById('completedSessionsCount').textContent = pomoState.completedToday;
+          localStorage.setItem(STORAGE_KEYS.POMODORO, JSON.stringify({ completedToday: pomoState.completedToday }));
+          showToast('Focus interval finished! Take a 5-minute breather.');
+          setTimerMode('shortBreak');
+        } else {
+          showToast('Break finished! Ready to begin next study block?');
+          setTimerMode('study');
+        }
+      }
+
+      // Web Audio API Chime Synthesizer (No external sound file dependency)
+      function playBellChime() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const ctx = new AudioContext();
+          
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 1.2);
+        } catch (err) {
+          console.warn('Audio chime notice:', err);
+        }
+      }
+
+      /* ==========================================================================
+         5. STUDY TOOLKIT: GPA / GRADE CALCULATOR
+         ========================================================================== */
+      function renderGpaCalculator() {
+        const container = document.getElementById('gpaCoursesList');
+        if (!container) return;
+
+        container.innerHTML = appState.gpaCourses
+          .map((c) => {
+            return `
+            <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors">
+              <div class="flex-1 min-w-0">
+                <input
+                  type="text"
+                  value="${escapeHtml(c.name)}"
+                  onchange="updateGpaCourseName('${c.id}', this.value)"
+                  class="w-full text-xs font-semibold bg-transparent text-slate-900 dark:text-white border-b border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-brand-500 focus:outline-none py-0.5"
+                  placeholder="Course Name..."
+                />
+              </div>
+
+              <!-- Credit Hours Input -->
+              <div class="w-24 shrink-0 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <span>Cr:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="6"
+                  value="${c.credits}"
+                  onchange="updateGpaCourseCredits('${c.id}', this.value)"
+                  class="w-12 px-2 py-1 text-xs text-center font-mono font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+              </div>
+
+              <!-- Letter Grade Select -->
+              <div class="w-24 shrink-0">
+                <select
+                  onchange="updateGpaCourseGrade('${c.id}', this.value)"
+                  class="w-full px-2 py-1 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                >
+                  ${Object.keys(GRADE_POINTS)
+                    .map((grade) => `<option value="${grade}" ${grade === c.grade ? 'selected' : ''}>${grade} (${GRADE_POINTS[grade].toFixed(1)})</option>`)
+                    .join('')}
+                </select>
+              </div>
+
+              <!-- Remove Row Button -->
+              <button
+                onclick="removeGpaCourse('${c.id}')"
+                class="p-1 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                title="Remove course"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          `;
+          })
+          .join('');
+
+        calculateGpa();
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function updateGpaCourseName(id, val) {
+        const item = appState.gpaCourses.find((c) => c.id === id);
+        if (item) {
+          item.name = val;
+          saveGpaState();
+        }
+      }
+      function updateGpaCourseCredits(id, val) {
+        const item = appState.gpaCourses.find((c) => c.id === id);
+        if (item) {
+          item.credits = Math.max(1, parseInt(val) || 1);
+          saveGpaState();
+          calculateGpa();
+        }
+      }
+      function updateGpaCourseGrade(id, val) {
+        const item = appState.gpaCourses.find((c) => c.id === id);
+        if (item) {
+          item.grade = val;
+          saveGpaState();
+          calculateGpa();
+        }
+      }
+      function addGpaCourseRow() {
+        const newCourse = {
+          id: 'gpa-' + Date.now(),
+          name: 'Elective Course Seminar',
+          credits: 3,
+          grade: 'A',
+        };
+        appState.gpaCourses.push(newCourse);
+        saveGpaState();
+        renderGpaCalculator();
+      }
+      function removeGpaCourse(id) {
+        if (appState.gpaCourses.length <= 1) {
+          showToast('Keep at least one course in calculation');
+          return;
+        }
+        appState.gpaCourses = appState.gpaCourses.filter((c) => c.id !== id);
+        saveGpaState();
+        renderGpaCalculator();
+      }
+      function resetGpaToDefault() {
+        appState.gpaCourses = JSON.parse(JSON.stringify(DEFAULT_GPA_COURSES));
+        saveGpaState();
+        renderGpaCalculator();
+        showToast('Reset GPA courses to standard semester curriculum');
+      }
+
+      function calculateGpa() {
+        let totalPoints = 0;
+        let totalCredits = 0;
+
+        appState.gpaCourses.forEach((c) => {
+          const pts = GRADE_POINTS[c.grade] ?? 4.0;
+          const cr = c.credits;
+          totalPoints += pts * cr;
+          totalCredits += cr;
+        });
+
+        const gpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+        document.getElementById('gpaScoreDisplay').textContent = gpa;
+        document.getElementById('gpaTotalCredits').textContent = totalCredits;
+        document.getElementById('statGpaScore').textContent = gpa;
+
+        const notice = document.getElementById('gpaHonorNotice');
+        const numGpa = parseFloat(gpa);
+        if (numGpa >= 3.75) {
+          notice.textContent = "Dean's High Honors (GPA ≥ 3.75)";
+          notice.className = 'text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md';
+          document.getElementById('statGpaStatus').textContent = 'High Honors';
+        } else if (numGpa >= 3.5) {
+          notice.textContent = "Dean's Honors Status (GPA ≥ 3.50)";
+          notice.className = 'text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md';
+          document.getElementById('statGpaStatus').textContent = 'Honors';
+        } else if (numGpa >= 3.0) {
+          notice.textContent = 'Good Academic Standing (GPA ≥ 3.00)';
+          notice.className = 'text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-md';
+          document.getElementById('statGpaStatus').textContent = 'Good Standing';
+        } else {
+          notice.textContent = 'Academic Attention Advised (GPA < 3.00)';
+          notice.className = 'text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-md';
+          document.getElementById('statGpaStatus').textContent = 'Review';
+        }
+      }
+
+      function saveGpaState() {
+        localStorage.setItem(STORAGE_KEYS.GPA_COURSES, JSON.stringify(appState.gpaCourses));
+      }
+
+      /* ==========================================================================
+         6. TASK & ASSIGNMENT PLANNER (KANBAN & PROGRESS)
+         ========================================================================== */
+      function renderTasks() {
+        const cols = {
+          todo: document.getElementById('col-todo'),
+          in_progress: document.getElementById('col-in_progress'),
+          completed: document.getElementById('col-completed'),
+        };
+
+        const counts = { todo: 0, in_progress: 0, completed: 0 };
+
+        Object.keys(cols).forEach((k) => (cols[k].innerHTML = ''));
+
+        appState.tasks.forEach((task) => {
+          counts[task.status] = (counts[task.status] || 0) + 1;
+          const cardHtml = createTaskCardHtml(task);
+          if (cols[task.status]) {
+            cols[task.status].insertAdjacentHTML('beforeend', cardHtml);
+          }
+        });
+
+        // Set counters
+        document.getElementById('count-todo').textContent = counts.todo;
+        document.getElementById('count-in_progress').textContent = counts.in_progress;
+        document.getElementById('count-completed').textContent = counts.completed;
+
+        // Velocity Progress
+        const total = appState.tasks.length;
+        const completed = counts.completed || 0;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        document.getElementById('taskProgressPercentage').textContent = `${percentage}%`;
+        document.getElementById('taskProgressRatio').textContent = `${completed} / ${total}`;
+        document.getElementById('taskProgressBar').style.width = `${percentage}%`;
+
+        updateQuickStats();
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function createTaskCardHtml(task) {
+        const priorityColors = {
+          High: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-900/60',
+          Medium: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900/60',
+          Low: 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
+        };
+        const pClass = priorityColors[task.priority] || priorityColors.Medium;
+
+        return `
+          <div
+            id="task-card-${task.id}"
+            draggable="true"
+            ondragstart="handleCardDragStart(event, '${task.id}')"
+            ondragend="handleCardDragEnd(event)"
+            class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs cursor-grab active:cursor-grabbing hover:border-slate-300 dark:hover:border-slate-700 transition-all select-none group"
+          >
+            <div class="flex items-center justify-between gap-2 mb-2 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200">${escapeHtml(task.course)}</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded border ${pClass}">
+                ${escapeHtml(task.priority)}
+              </span>
+            </div>
+
+            <div class="text-xs font-medium text-slate-900 dark:text-white leading-snug mb-3">
+              ${escapeHtml(task.title)}
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div class="flex items-center gap-1 font-mono">
+                <i data-lucide="calendar" class="w-3 h-3"></i>
+                <span>${escapeHtml(task.dueDate)}</span>
+              </div>
+
+              <!-- Quick Shift / Delete Actions -->
+              <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                ${
+                  task.status !== 'todo'
+                    ? `<button onclick="shiftTask('${task.id}', -1)" class="p-1 hover:text-slate-800 dark:hover:text-white" title="Move Left">
+                        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                      </button>`
+                    : ''
+                }
+                ${
+                  task.status !== 'completed'
+                    ? `<button onclick="shiftTask('${task.id}', 1)" class="p-1 hover:text-slate-800 dark:hover:text-white" title="Move Right">
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                      </button>`
+                    : ''
+                }
+                <button onclick="deleteTask('${task.id}')" class="p-1 hover:text-rose-500 text-slate-400" title="Delete Task">
+                  <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* Drag & Drop API for Tasks */
+      let draggedTaskId = null;
+
+      function handleCardDragStart(e, taskId) {
+        draggedTaskId = taskId;
+        e.dataTransfer.setData('text/plain', taskId);
+        e.currentTarget.classList.add('dragging-card');
+      }
+
+      function handleCardDragEnd(e) {
+        e.currentTarget.classList.remove('dragging-card');
+        document.querySelectorAll('.kanban-dropzone').forEach((el) => el.classList.remove('drag-over'));
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+      }
+
+      function handleDragLeave(e) {
+        e.currentTarget.classList.remove('drag-over');
+      }
+
+      function handleDrop(e, targetStatus) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if (!draggedTaskId) return;
+
+        const task = appState.tasks.find((t) => t.id === draggedTaskId);
+        if (task && task.status !== targetStatus) {
+          task.status = targetStatus;
+          saveTasksState();
+          renderTasks();
+          showToast(`Task moved to ${targetStatus.replace('_', ' ')}`);
+        }
+        draggedTaskId = null;
+      }
+
+      function shiftTask(taskId, direction) {
+        const flow = ['todo', 'in_progress', 'completed'];
+        const task = appState.tasks.find((t) => t.id === taskId);
+        if (!task) return;
+
+        const currentIndex = flow.indexOf(task.status);
+        const newIndex = currentIndex + direction;
+        if (newIndex >= 0 && newIndex < flow.length) {
+          task.status = flow[newIndex];
+          saveTasksState();
+          renderTasks();
+          showToast(`Task status updated`);
+        }
+      }
+
+      function deleteTask(taskId) {
+        appState.tasks = appState.tasks.filter((t) => t.id !== taskId);
+        saveTasksState();
+        renderTasks();
+        showToast('Task removed from board');
+      }
+
+      function saveTasksState() {
+        localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(appState.tasks));
+      }
+
+      /* Add Task Modal */
+      function openAddTaskModal() {
+        document.getElementById('addTaskModal').classList.remove('hidden');
+        // Set default date to 3 days ahead
+        const future = new Date();
+        future.setDate(future.getDate() + 3);
+        document.getElementById('inputTaskDueDate').value = future.toISOString().split('T')[0];
+        if (window.lucide) lucide.createIcons();
+      }
+      function closeAddTaskModal() {
+        document.getElementById('addTaskModal').classList.add('hidden');
+        document.getElementById('addTaskForm').reset();
+      }
+
+      function handleTaskSubmit(e) {
+        e.preventDefault();
+        const title = document.getElementById('inputTaskTitle').value.trim();
+        const course = document.getElementById('inputTaskCourse').value.trim().toUpperCase();
+        const dueDate = document.getElementById('inputTaskDueDate').value;
+        const priority = document.getElementById('inputTaskPriority').value;
+        const status = document.getElementById('inputTaskState').value;
+
+        const newTask = {
+          id: 'task-' + Date.now(),
+          title,
+          course,
+          dueDate,
+          priority,
+          status,
+        };
+
+        appState.tasks.push(newTask);
+        saveTasksState();
+        renderTasks();
+        closeAddTaskModal();
+        showToast('New task added to board');
+      }
+
+      /* ==========================================================================
+         7. TOAST FEEDBACK UTILITY
+         ========================================================================== */
+      function showToast(message) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className =
+          'animate-toast pointer-events-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 border border-slate-700 dark:border-slate-200';
+        toast.innerHTML = `
+          <i data-lucide="check" class="w-4 h-4 text-emerald-400 dark:text-emerald-600"></i>
+          <span>${escapeHtml(message)}</span>
+        `;
+        container.appendChild(toast);
+        if (window.lucide) lucide.createIcons();
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          toast.style.transition = 'all 0.2s ease';
+          setTimeout(() => toast.remove(), 200);
+        }, 2800);
+      }
+
+      /* Helper: HTML entity sanitization */
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      /* Launch Application on DOM Ready */
+      document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+  </body>
+</html>

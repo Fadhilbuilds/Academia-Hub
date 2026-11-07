@@ -1,0 +1,7 @@
+{
+  "name": "Student Resource Hub",
+  "description": "Centralized academic workflow platform for high school and university students with study materials repository, Pomodoro focus timer, GPA calculator, and assignment task board.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
